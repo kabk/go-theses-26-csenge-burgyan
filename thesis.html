@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Blueprint Remains — Thesis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black:      #0e0e0e;
+    --off-black:  #f5f3ee;
+    --surface:    #eeeae2;
+    --border:     #d8d4cc;
+    --muted:      #999;
+    --body-text:  #2a2a2a;
+    --white:      #0e0e0e;
+    --red:        #c0392b;
+    --red-dim:    #c0392b;
+    --nav-width:  230px;
+    --body-font:  'EB Garamond', Georgia, serif;
+    --mono:       'Space Mono', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: #f5f3ee;
+    color: var(--body-text);
+    font-family: var(--body-font);
+    font-size: 19px;
+    line-height: 1.78;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0;
+    width: var(--nav-width);
+    height: 100vh;
+    padding: 48px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-right: 1px solid var(--border);
+    background: var(--off-black);
+    z-index: 100;
+    overflow-y: auto;
+  }
+
+  .nav-title {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 28px;
+    line-height: 1.9;
+  }
+
+  nav a {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    text-decoration: none;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    padding: 6px 0;
+    transition: color 0.2s;
+  }
+
+  nav a .num { font-size: 8px; color: var(--border); min-width: 14px; flex-shrink: 0; transition: color 0.2s; }
+  nav a:hover { color: var(--white); }
+  nav a:hover .num { color: var(--muted); }
+  nav a.active { color: var(--white); }
+  nav a.active .num { color: var(--red); }
+
+  .nav-divider { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+
+  .nav-footer {
+    margin-top: auto;
+    font-family: var(--mono);
+    font-size: 7.5px;
+    color: var(--border);
+    letter-spacing: 0.1em;
+    line-height: 2.2;
+    text-transform: uppercase;
+  }
+
+  /* ── MAIN ── */
+  main {
+    margin-left: var(--nav-width);
+    max-width: 800px;
+    padding: 0 72px 140px 72px;
+    flex: 1;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 72px 0 60px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 80px;
+  }
+
+  /* ── WORD OVERLAY ── */
+  #word-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    pointer-events: none;
+    overflow: hidden;
+    background: #f5f3ee;
+    transition: background 0.6s ease;
+  }
+
+  #word-overlay.cleared {
+    background: transparent;
+    pointer-events: none;
+  }
+
+  .ov-word {
+    position: absolute;
+    font-family: var(--mono);
+    font-size: 7px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #2a2a2a;
+    white-space: nowrap;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    will-change: opacity, transform;
+    line-height: 1;
+  }
+
+  .ov-word.gone {
+    opacity: 0;
+    transform: scale(0.94);
+    pointer-events: none;
+  }
+
+  /* once overlay is fully gone, hide it */
+  #word-overlay.hidden {
+    display: none;
+  }
+
+  /* hero content starts hidden, revealed after overlay clears */
+  .hero-content {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  .hero-content.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* remove old ascii-hero — no longer needed inline */
+  .ascii-hero { display: none; }
+
+  .hero-label {
+    font-family: var(--mono);
+    font-size: 8.5px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+
+  .hero h1 {
+    font-family: var(--body-font);
+    font-size: clamp(40px, 5.5vw, 64px);
+    font-weight: 400;
+    line-height: 1.06;
+    color: var(--white);
+    margin-bottom: 20px;
+  }
+
+  .hero h1 em { font-style: italic; color: var(--body-text); }
+
+  .hero-sub {
+    font-size: 17px;
+    color: var(--muted);
+    font-style: italic;
+    max-width: 500px;
+    line-height: 1.65;
+    margin-bottom: 34px;
+  }
+
+  .hero-meta {
+    font-family: var(--mono);
+    font-size: 8.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    line-height: 2.2;
+  }
+
+  .hero-meta .dot { color: var(--red); margin: 0 8px; }
+
+  /* ── SECTIONS ── */
+  section {
+    margin-bottom: 88px;
+    scroll-margin-top: 40px;
+  }
+
+  section h2 {
+    font-family: var(--body-font);
+    font-size: 25px;
+    font-weight: 400;
+    color: var(--white);
+    margin-bottom: 36px;
+    display: flex;
+    align-items: baseline;
+    gap: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--red);
+    letter-spacing: 0.08em;
+    flex-shrink: 0;
+  }
+
+  section p {
+    margin-bottom: 22px;
+    max-width: 630px;
+  }
+
+  section p:last-child { margin-bottom: 0; }
+
+  /* research question block */
+  .rq-block {
+    margin: 40px 0;
+    padding: 24px 28px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .rq-block .rq-label {
+    font-family: var(--mono);
+    font-size: 7.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--red-dim);
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .rq-block p {
+    font-size: 18px;
+    font-style: italic;
+    color: var(--white);
+    max-width: 100%;
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  sup {
+    font-family: var(--mono);
+    font-size: 8px;
+    color: var(--red-dim);
+    cursor: default;
+    vertical-align: super;
+    line-height: 0;
+    margin-left: 2px;
+    transition: color 0.15s;
+  }
+  sup:hover { color: var(--red); }
+
+  .pull-quote {
+    margin: 48px 0;
+    padding: 26px 0 26px 26px;
+    border-left: 2px solid var(--red);
+    font-size: 20px;
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--white);
+    max-width: 540px;
+  }
+
+  /* ── FIGURES ── */
+  figure { margin: 52px 0; }
+  figure img { width: 100%; display: block; }
+  figure.half { max-width: 420px; }
+
+  figure.full-bleed {
+    margin-left: -72px;
+    margin-right: -72px;
+    width: calc(100% + 144px);
+  }
+
+  figcaption {
+    font-family: var(--mono);
+    font-size: 8px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    margin-top: 12px;
+    line-height: 1.7;
+    text-transform: uppercase;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
+
+  /* bold caption intro */
+  figcaption strong {
+    color: var(--body-text);
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: 0;
+    font-family: var(--body-font);
+    font-size: 13px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .img-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px;
+    margin: 52px 0;
+  }
+  .img-pair img { width: 100%; display: block; }
+  .img-pair figcaption { grid-column: 1 / -1; }
+
+  /* image grid for the billboard collage */
+  .img-single { margin: 52px 0; }
+  .img-single img { width: 100%; display: block; }
+
+  /* ── SLIDESHOW ── */
+  .slideshow { margin: 52px 0; }
+  .slideshow .slide { display: none; }
+  .slideshow .slide.active { display: block; }
+  .slideshow .slide img { width: 100%; display: block; }
+
+  .ss-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .ss-count { font-family: var(--mono); font-size: 8.5px; color: var(--muted); letter-spacing: 0.1em; }
+  .ss-cap { font-family: var(--mono); font-size: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; flex: 1; padding: 0 20px; }
+  .ss-arrows { display: flex; gap: 2px; }
+
+  .ss-arrows button {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 9px;
+    cursor: pointer;
+    padding: 5px 13px;
+    transition: all 0.15s;
+  }
+  .ss-arrows button:hover { background: var(--red); color: var(--white); border-color: var(--red); }
+
+  /* ── WORD FREQ ── */
+  .word-freq {
+    margin: 48px 0;
+    padding: 28px 28px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .freq-label {
+    font-family: var(--mono);
+    font-size: 7.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .freq-row { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+
+  .freq-word { font-family: var(--mono); font-size: 11px; color: var(--white); min-width: 110px; }
+
+  .freq-bar-wrap { flex: 1; height: 1px; background: var(--border); }
+
+  .freq-bar { height: 100%; background: var(--red); width: 0; transition: width 1.4s cubic-bezier(0.16, 1, 0.3, 1); }
+  .freq-bar.go { width: var(--tw); }
+
+  .freq-n { font-family: var(--mono); font-size: 8px; color: var(--muted); min-width: 44px; text-align: right; }
+
+  /* ── REFERENCES ── */
+  .references {
+    margin: 48px 0;
+    padding: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .references .ref-label {
+    font-family: var(--mono);
+    font-size: 7.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .ref-entry {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ref-entry:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+  .ref-author {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--red-dim);
+    min-width: 120px;
+    flex-shrink: 0;
+    padding-top: 3px;
+    line-height: 1.5;
+    letter-spacing: 0.04em;
+  }
+
+  .ref-text { font-size: 15px; color: var(--muted); line-height: 1.6; }
+  .ref-text em { color: var(--body-text); font-style: italic; }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 72px 0; }
+
+  /* ── FOOTNOTES ── */
+  .footnotes {
+    margin-top: 88px;
+    padding-top: 36px;
+    border-top: 1px solid var(--border);
+  }
+
+  .footnotes h3 {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+
+  .footnotes ol { list-style: none; counter-reset: fn; padding: 0; }
+
+  .footnotes li {
+    counter-increment: fn;
+    display: flex;
+    gap: 16px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .footnotes li::before {
+    content: counter(fn) '.';
+    font-family: var(--mono);
+    font-size: 8px;
+    color: var(--red-dim);
+    min-width: 20px;
+    padding-top: 3px;
+    flex-shrink: 0;
+  }
+
+  /* ── DICTIONARY ── */
+  .dictionary {
+    margin-top: 88px;
+    padding-top: 52px;
+    border-top: 2px solid var(--red-dim);
+    scroll-margin-top: 40px;
+  }
+
+  .dict-hd {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 44px;
+  }
+
+  .dict-entry {
+    display: grid;
+    grid-template-columns: 190px 1fr;
+    gap: 24px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 15px;
+  }
+
+  .dict-entry .term { font-family: var(--body-font); font-style: italic; font-size: 16px; color: var(--white); }
+  .dict-entry .def { color: var(--muted); line-height: 1.65; }
+
+  /* ── COLOPHON ── */
+  .colophon {
+    margin-top: 88px;
+    padding-top: 36px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    line-height: 2.4;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+
+  .colophon strong { color: var(--white); display: block; margin-bottom: 4px; }
+
+  /* ── FADE ── */
+  .fade-in { opacity: 0; transform: translateY(14px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .fade-in.visible { opacity: 1; transform: none; }
+
+  /* ── PLACEHOLDER NOTE ── */
+  .placeholder {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--red-dim);
+    border: 1px dashed var(--red-dim);
+    padding: 10px 14px;
+    margin: 20px 0;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 860px) {
+    nav { display: none; }
+    main { margin-left: 0; padding: 0 24px 80px; }
+    figure.full-bleed { margin-left: -24px; margin-right: -24px; width: calc(100% + 48px); }
+    .dict-entry { grid-template-columns: 1fr; gap: 4px; }
+    .colophon { grid-template-columns: 1fr; }
+    .img-pair { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="side-nav">
+  <div class="nav-title">The Blueprint Remains<br>KABK — 2025</div>
+  <a href="#abstract"   data-s="abstract">  <span class="num">0</span> Abstract</a>
+  <a href="#intro"      data-s="intro">     <span class="num">1</span> Introduction</a>
+  <a href="#chapter-1"  data-s="chapter-1"> <span class="num">2</span> The Archive</a>
+  <a href="#chapter-2"  data-s="chapter-2"> <span class="num">3</span> The Grammar</a>
+  <a href="#chapter-3"  data-s="chapter-3"> <span class="num">4</span> The Enemy</a>
+  <a href="#chapter-4"  data-s="chapter-4"> <span class="num">5</span> The Thread</a>
+  <a href="#epilogue"   data-s="epilogue">  <span class="num">6</span> Conclusion</a>
+  <hr class="nav-divider">
+  <a href="#dictionary" data-s="dictionary"><span class="num">—</span> Glossary</a>
+  <div class="nav-footer">Graphic Design<br>KABK, The Hague<br>2025</div>
+</nav>
+
+<!-- WORD OVERLAY -->
+<div id="word-overlay" aria-hidden="true"></div>
+
+<main>
+
+  <!-- HERO -->
+  <header class="hero fade-in">
+    <div class="ascii-hero" id="ascii" aria-hidden="true"></div>
+    <div class="hero-content">
+      <div class="hero-label">Graduation Thesis &nbsp;·&nbsp; Graphic Design &nbsp;·&nbsp; KABK The Hague</div>
+      <h1><em>The Blueprint Remains</em></h1>
+      <p class="hero-sub">Visual grammar, propaganda lineage, and the persistence of political language in Hungary, 1950–present.</p>
+      <div class="hero-meta">
+        [Your Name]<span class="dot">·</span>Royal Academy of Art, The Hague<span class="dot">·</span>2025
+      </div>
+    </div>
+  </header>
+
+  <!-- 0 ABSTRACT -->
+  <section id="abstract" class="fade-in">
+    <h2><span class="section-num">00</span> Abstract</h2>
+    <p>This thesis examines the recurring visual and linguistic patterns within Hungarian political communication, tracing structural connections between the socialist era of the 1950s and contemporary state messaging. It investigates how the same aesthetic logic resurfaces across decades and radically different ideologies — not by coincidence, but as a recurring historical blueprint: a set of visual and linguistic rules that outlast any single regime and continue to shape public imagination today.</p>
+    <p>Through systematic analysis of pro-government media and a curated archive of socialist-era posters, this research tracks the visual and verbal mechanisms of enemy construction — examining how figures such as "Soros," "Brussels," and "migrants" function as modern-day ideological targets shaped by durable archetypes. The research culminates in a large-scale woven tapestry: slow, material, and permanent, in deliberate contrast to the disposable nature of political media. Where billboards are pasted over, weaving is impossible to tear out.</p>
+  </section>
+
+  <hr>
+
+  <!-- 1 INTRODUCTION -->
+  <section id="intro" class="fade-in">
+    <h2><span class="section-num">01</span> Introduction</h2>
+    <p>Having grown up in Hungary, I witnessed a gradual shift in the public landscape during the years following the 2010 election. Billboards that once advertised consumer products were gradually replaced by government messaging. I recall how the content of these billboards began to switch, becoming a constant presence — and how quickly it came to feel normal.</p>
+
+    <!-- IMAGE PLACEHOLDER: háború/béke billboards -->
+    <figure>
+      <img src="https://picsum.photos/seed/haboru_beke/700/400?grayscale" alt="Placeholder — háború / béke billboard examples">
+      <figcaption>
+        <strong>Placeholder — háború / béke billboard examples.</strong>
+        Replace with real images of the government billboards showing the war/peace binary.
+      </figcaption>
+    </figure>
+
+    <p>Today, the government uses aggressive visuals to construct clear "enemy images," portraying specific groups or individuals as a threat to society. By making people feel vulnerable and unsafe, the messaging creates a demand for a protective authority to step in. My research examines the aesthetic lineage of this state propaganda — a visual system built on fear and exclusion — by uncovering the deep connections between the visual grammar of the 1950s socialist era and modern state messaging.<sup>1</sup></p>
+
+    <p>As a graphic designer, I am specifically interested in how contemporary political communication borrows visual rules established decades ago, and how the same dehumanising archetypes reappear in Fidesz campaign materials. This investigation focuses on how specific symbols remain so resilient in the Hungarian political imagination and how enemy creation persists as a dominant political tool regardless of the shifting ideological landscape.</p>
+
+    <div class="rq-block">
+      <span class="rq-label">Research Question</span>
+      <p>How do the visual and linguistic patterns of socialist propaganda established in the 1950s remain so resilient in modern Hungarian political communication?</p>
+    </div>
+
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.<sup>1</sup></p>
+
+    <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.</p>
+
+  <hr>
+
+  <!-- 2 THE ARCHIVE -->
+  <section id="chapter-1" class="fade-in">
+    <h2><span class="section-num">02</span> The Archive</h2>
+
+    <p>When I look at my visual archive — posters from the 1950s placed alongside images of contemporary billboards — I am trying to recognise patterns that move across different layers of communication. Each material carries its own logic, but when placed side by side, they begin to show the same structure. By examining them together, I want to show that even though the political context has changed, the deeper structural logic has not.</p>
+
+    <p>Rather than treating these materials as separate objects, I approach them as parts of the same system. A keyword in a news article, a silhouette on a billboard, a layout from a seventy-year-old poster — they each do a different job, but they work toward the same goal: building a narrative of threat and protection.</p>
+
+    <div class="pull-quote">"A keyword in a news article, a silhouette on a billboard, a layout from a seventy-year-old poster — they each do a different job, but they work toward the same goal."</div>
+
+    <!-- 1947 VALASSZ HABORU VAGY BEKET poster + HABORU/BEKE billboard pair -->
+    <div class="img-pair">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/1947_Hungarian_Social_Democratic_Party_election_poster.jpg/400px-1947_Hungarian_Social_Democratic_Party_election_poster.jpg" alt="1947 Communist poster — Háború vagy Béket">
+      <img src="https://picsum.photos/seed/fidesz_beke_2025/400/520?grayscale" alt="Placeholder — 2025 Fidesz HABORU / BEKE billboard">
+      <figcaption>
+        <strong>Whether during the Socialist era or today, the language and imagery of war (háború) and peace (béke) follow the same familiar pattern.</strong>
+        Left: 1947 Social Democratic Party poster. Right: 2025 Fidesz campaign billboard. Both clearly define who is presented as the protector and who is framed as the enemy. The visual playbook for creating a sense of existential threat has stayed largely the same.
+      </figcaption>
+    </div>
+
+    <p>This makes it possible to trace how figures like the "enemy" and the "hero" are constructed along a recurring historical line. The repetition of certain words in the media creates a familiarity that makes the aggressive visuals on the street feel expected rather than shocking. Over time, these patterns stop feeling like propaganda and start feeling like common sense.</p>
+
+    <!-- "A ceruza is fegyver!" 1947 poster -->
+    <figure class="half">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Szavazz_szocialdemokratara_%281947%29.jpg/300px-Szavazz_szocialdemokratara_%281947%29.jpg" alt="A ceruza is fegyver — 1947">
+      <figcaption>
+        <strong>"The pencil is also a weapon!" — 1947</strong>
+        The repeated image of the checked ballot box, with a pencil slashing through a snake, turns a government message into something that feels personal. It suggests that a simple trip to the polls is a way of protecting oneself. That same strategy of framing political power in combative terms still shapes how authority presents itself in Hungary today.
+      </figcaption>
+    </figure>
+
+    <p>I expect to find that these patterns persist because they generate a sense of vulnerability that repeatedly calls for authority — a strong leader to step in. Based on my analysis of both 1950s materials and current pro-government messaging, this sense of danger is built through the same vocabulary and visual logic. I want to understand how this formula is so resilient and how it continues to shape the appearance of power in Hungary today.</p>
+
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+
+    <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+
+    <figure>
+      <img src="https://picsum.photos/seed/archive_spread/700/440?grayscale" alt="Placeholder — archive spread, poster selection">
+      <figcaption>
+        <strong>Placeholder — archive selection.</strong>
+        Replace with a spread of your collected socialist-era posters, laid out as a research archive.
+      </figcaption>
+    </figure>
+
+  <hr>
+
+  <!-- 3 THE GRAMMAR -->
+  <section id="chapter-2" class="fade-in">
+    <h2><span class="section-num">03</span> The Grammar</h2>
+
+    <p>Jonas Staal argues that propaganda is not simply about communicating false information; it uses design to construct a political reality of its own.<sup>2</sup> In my project, this means that the visual patterns I track are not decorative or secondary. They are part of what makes state authority appear stable and tangible in everyday life.</p>
+
+    <p>Bőhm Kornél explains that modern propaganda is not just a series of advertisements, but a professional system designed to saturate our everyday reality. His work shows how constant repetition and dominance in the public space allow the message to overtake our critical thinking, eventually turning the entire environment into a space that constantly reinforces the state's narrative.<sup>3</sup> What is important here is the word "saturation" — it suggests not a single act of persuasion but an atmospheric condition, something that surrounds rather than confronts. The billboard does not argue with you. It simply occupies the same space you do, every day, until its logic becomes your logic.</p>
+
+    <p>Ervin Csizmadia's analysis of Hungarian political development argues that current Hungarian politics is driven by "pattern following," where old historical models of authority are revived.<sup>4</sup> His work supports my research by showing that the structural blueprint I am finding is not a coincidence, but part of a long-term historical logic that dictates how power is communicated in Hungary. It provides theoretical proof that the visual and linguistic repetitions I am documenting are not just stylistic choices, but part of a deeper, recurring strategy. Where Staal gives us the design theory and Bőhm the media system, Csizmadia gives us the historical proof: this is not imitation but inheritance.
+
+    <div class="references">
+      <span class="ref-label">References from literature</span>
+      <div class="ref-entry">
+        <span class="ref-author">Jonas Staal</span>
+        <span class="ref-text"><em>Propaganda Art — From the 20th to the 21st Century.</em> Propaganda uses design to construct a political reality of its own. The visual patterns tracked in this research are not decorative — they are what makes state authority appear stable and tangible in everyday life.</span>
+      </div>
+      <div class="ref-entry">
+        <span class="ref-author">Bőhm Kornél</span>
+        <span class="ref-text"><em>Propaganda.</em> Modern propaganda is a professional system designed to saturate everyday reality. Constant repetition and dominance in public space allows the message to overtake critical thinking, turning the environment itself into a vehicle for the state's narrative.</span>
+      </div>
+      <div class="ref-entry">
+        <span class="ref-author">Ervin Csizmadia</span>
+        <span class="ref-text"><em>The Logic of Hungarian Political Development (1990–2022),</em> 2024. Current Hungarian politics is driven by "pattern following," where old historical models of authority are revived — providing theoretical proof that visual and linguistic repetitions are not stylistic choices but part of a long-term historical strategy.</span>
+      </div>
+    </div>
+
+    <!-- Slideshow: archive posters for comparison -->
+    <div class="slideshow" id="ss1">
+      <div class="slide active">
+        <img src="https://picsum.photos/seed/poster1950a/700/440?grayscale" alt="Archive poster placeholder 1">
+      </div>
+      <div class="slide">
+        <img src="https://picsum.photos/seed/poster1950b/700/440?grayscale" alt="Archive poster placeholder 2">
+      </div>
+      <div class="slide">
+        <img src="https://picsum.photos/seed/poster1950c/700/440?grayscale" alt="Archive poster placeholder 3">
+      </div>
+      <div class="ss-bar">
+        <span class="ss-count" id="ss1-c">1 / 3</span>
+        <span class="ss-cap">Archive: socialist-era posters, 1947–1956 — replace with real archive images</span>
+        <div class="ss-arrows">
+          <button onclick="prevSS('ss1')">❮</button>
+          <button onclick="nextSS('ss1')">❯</button>
+        </div>
+      </div>
+    </div>
+
+    <p>The visual rules that structure a 1952 poster — hierarchy, silhouette, the upward gaze of the hero, the dark downward gaze of the enemy — appear almost unchanged in a 2018 billboard campaign. The composition does not need to be copied consciously. It is inherited, absorbed into the professional practice of political communication as though it were simply good design.<sup>5</sup></p>
+
+    <p>The specific elements I track across both periods include: the use of high contrast between figure and ground; the cropping of faces to emphasise expression over individuality; the pairing of a single large word with a secondary explanatory line; and the consistent placement of party identification at the lower right corner of the composition. These are not stylistic coincidences. They are a grammar — a set of rules so internalised that neither the designer nor the viewer necessarily recognises them as rules at all. That invisibility is precisely what makes them effective. Propaganda that announces itself is propaganda that can be rejected. Propaganda that feels like design simply feels true.</p>
+
+    <figure>
+      <img src="https://picsum.photos/seed/grammar_compare/700/420?grayscale" alt="Placeholder — compositional comparison 1952 poster vs 2018 billboard">
+      <figcaption>
+        <strong>Placeholder — compositional overlay: 1952 socialist poster alongside 2018 Fidesz billboard.</strong>
+        Replace with your own annotated comparison showing shared compositional rules: hierarchy, silhouette, upward gaze, party mark placement.
+      </figcaption>
+    </figure>
+  </section>
+
+  <hr>
+
+  <!-- 4 THE ENEMY -->
+  <section id="chapter-3" class="fade-in">
+    <h2><span class="section-num">04</span> The Enemy</h2>
+
+    <p>The government constructs an enemy image by framing rivals as servants of foreign interests who fuel threats like war, gender ideology, and migration — portraying them as a danger that must be eliminated to keep the nation safe. György Soros is targeted because he represents the "globalist" opposite of the government's message: a billionaire who supports open borders, international organisations, and liberal values, which allows the state to frame him as a foreign threat to Hungarian sovereignty.</p>
+
+    <p>By turning a complex political debate into a fight against one specific "puppet master," the government can blame him for every national problem — from migration to economic shifts — creating a constant need for a "strong leader" to protect the people from his influence.<sup>6</sup> This mechanism is not new. In socialist-era materials, the enemy figure was similarly personalised — a kulak, a Western spy, a class traitor — someone specific enough to be recognised, vague enough to be projected onto anyone. The function is identical: abstraction made personal, fear given a face.</p>
+
+    <p>What my keyword analysis makes visible is that the enemy is also constructed linguistically before it is constructed visually. The words appear first — in headlines, in questionnaires sent to every Hungarian household, in the names of government programmes. By the time the billboard appears on the street, the audience already knows the vocabulary. The visual simply confirms what the language has already established. This is the deeper mechanism: the word primes the image, and the image naturalises the word. Together they build something that feels less like propaganda and more like shared knowledge.</p>
+
+    <!-- Billboard collage: the grid of government anti-Soros/Brussels/Brussels messages -->
+    <figure class="full-bleed">
+      <img src="https://picsum.photos/seed/billboard_collage/1200/700?grayscale" alt="Placeholder — government billboard collage 2015–2025">
+      <figcaption style="padding-left:72px;padding-right:72px;">
+        <strong>The government constructs an enemy image by framing rivals as servants of foreign interests who fuel threats like war, gender, and migration.</strong>
+        Grid of Fidesz government billboards, 2015–2025. References: The Hungarian Socialist Party uproots the reactionary forces 1945, government propaganda 2023–2025.
+      </figcaption>
+    </figure>
+
+    <p>To support this analysis systematically, I conducted a keyword frequency study of pro-government articles, tracking how often specific negative words appear across a corpus of state-aligned media between 2010 and 2024. The results confirm what the visual archive suggests: the vocabulary of threat is not incidental but structural, repeated with the consistency of a visual template.</p>
+
+    <!-- Word frequency chart -->
+    <div class="word-freq" id="freq">
+      <span class="freq-label">Keyword frequency — pro-government media corpus, 2010–2024</span>
+      <div class="freq-row"><span class="freq-word">Soros</span><div class="freq-bar-wrap"><div class="freq-bar" style="--tw:92%"></div></div><span class="freq-n">add real data</span></div>
+      <div class="freq-row"><span class="freq-word">Migration</span><div class="freq-bar-wrap"><div class="freq-bar" style="--tw:84%"></div></div><span class="freq-n">add real data</span></div>
+      <div class="freq-row"><span class="freq-word">Danger</span><div class="freq-bar-wrap"><div class="freq-bar" style="--tw:78%"></div></div><span class="freq-n">add real data</span></div>
+      <div class="freq-row"><span class="freq-word">Brussels</span><div class="freq-bar-wrap"><div class="freq-bar" style="--tw:71%"></div></div><span class="freq-n">add real data</span></div>
+      <div class="freq-row"><span class="freq-word">Opposition</span><div class="freq-bar-wrap"><div class="freq-bar" style="--tw:65%"></div></div><span class="freq-n">add real data</span></div>
+      <div class="freq-row"><span class="freq-word">War</span><div class="freq-bar-wrap"><div class="freq-bar" style="--tw:58%"></div></div><span class="freq-n">add real data</span></div>
+      <div class="freq-row"><span class="freq-word">Protection</span><div class="freq-bar-wrap"><div class="freq-bar" style="--tw:43%"></div></div><span class="freq-n">add real data</span></div>
+      <div class="freq-row"><span class="freq-word">Family</span><div class="freq-bar-wrap"><div class="freq-bar" style="--tw:37%"></div></div><span class="freq-n">add real data</span></div>
+      <div class="freq-row"><span class="freq-word">Peace</span><div class="freq-bar-wrap"><div class="freq-bar" style="--tw:27%"></div></div><span class="freq-n">add real data</span></div>
+    </div>
+
+    <p>This linguistic data was translated into a visual system in which the density of word counts directly dictates the composition and scale of the images produced. The word becomes the image. The frequency becomes the form.</p>
+
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+
+    <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.</p>
+    <div class="img-pair">
+      <img src="experiment_.jpg" alt="Word-portrait experiment 1">
+      <img src="experiment_2_.jpg" alt="Word-portrait experiment 2 — Soros, Migration, War, Danger">
+      <figcaption>
+        <strong>Working experiments: word-frequency portraits.</strong>
+        Socialist-era propaganda figures reconstructed using the vocabulary of contemporary pro-government media. The density of words including "Soros," "Migration," "Danger," "Opposition," and "War" governs the visual weight of each area of the composition. Typographic study, 2025.
+      </figcaption>
+    </div>
+
+    <!-- Ballot box comparison: 1947 pencil poster + 2025 Fidesz voting campaign -->
+    <div class="pull-quote">"The recurring motif of the checked ballot box transforms state messaging into an individual act, framing the future as a choice that rests entirely with the citizen — while the stakes are defined by the state."</div>
+
+    <p>The recurring motif of the checked ballot box — present in the 1947 "pencil is a weapon" poster and again in a 2025 Fidesz campaign — transforms state messaging into something that feels personal and urgent. The visual grammar has not changed. The enemy has simply been updated.<sup>7</sup></p>
+
+    <!-- Full bleed: second experiment image -->
+    <figure class="full-bleed">
+      <img src="experiment_2_.jpg" alt="Full-width word-frequency portrait">
+      <figcaption style="padding-left:72px;padding-right:72px;">
+        <strong>Figure — Typographic portrait constructed from word-frequency data.</strong>
+        The density of each term in the pro-government media corpus directly governs its visual weight within the composition. What reads as image is entirely made of language.
+      </figcaption>
+    </figure>
+  </section>
+
+  <hr>
+
+  <!-- 5 THE THREAD -->
+  <section id="chapter-4" class="fade-in">
+    <h2><span class="section-num">05</span> The Thread</h2>
+
+    <p>The medium chosen for the final work is large-scale woven tapestry. This is not an arbitrary choice. Weaving literally interlaces different threads to create a single image — which perfectly mirrors how visual grammar, linguistic patterns, and historical lineage are interwoven to produce Hungary's current political reality.</p>
+
+    <p>While paper billboards are temporary and designed to be pasted over, weaving these messages transforms them into something permanent — something impossible to tear out. The textile lab allows me to physically manifest the "resiliency" I have been researching. It proves that these patterns are no longer just fleeting signs, but have become a fixed, heavy part of the Hungarian political scene.</p>
+
+    <p>There is also something important in the slowness of weaving. A billboard can be produced in hours and installed overnight. A tapestry requires weeks of sustained attention — each thread placed deliberately, the image emerging gradually from repetition. This temporal quality is part of the argument. The propaganda I am studying did not arrive suddenly either. It accumulated. It was woven into the environment slowly, word by word, poster by poster, billboard by billboard, until it became the background against which everything else was read. The tapestry makes that process literal. It makes the labour visible.<sup>7</sup></p>
+
+    <figure>
+      <img src="https://picsum.photos/seed/tapestry_detail/700/460?grayscale" alt="Placeholder — tapestry detail / loom documentation">
+      <figcaption>
+        <strong>Placeholder — textile lab documentation.</strong>
+        Replace with photographs of the loom setup, thread preparation, or detail shots of the woven surface. The material process is part of the argument.
+      </figcaption>
+    </figure>
+
+    <div class="pull-quote">"Where billboards are pasted over, weaving is impossible to tear out. The slow permanence of the medium is the argument."</div>
+
+    <p>The sketch included in this thesis is not a final design but a working document, showing the core principle: image and text operating together as equal parts of the same argument. The word-frequency data directly feeds the visual composition — the content generates the form. The composition will continue to develop as the research evolves.</p>
+
+    <!-- Tapestry study / working sketch -->
+    <figure>
+      <img src="experiment_.jpg" alt="Working study for tapestry composition">
+      <figcaption>
+        <strong>Working study — tapestry composition in progress.</strong>
+        The typographic portrait, constructed from word-frequency data, will be translated into large-scale woven tapestry. Textile lab, KABK 2025.
+      </figcaption>
+    </figure>
+
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+
+    <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+  </section>
+
+  <hr>
+
+  <!-- 6 CONCLUSION -->
+  <section id="epilogue" class="fade-in">
+    <h2><span class="section-num">06</span> Conclusion</h2>
+
+    <p>The central claim of this research — that contemporary Hungarian political communication does not merely resemble socialist-era propaganda but directly inherits its visual grammar — is borne out across every dimension of this analysis: compositional structure, rhetorical strategy, symbolic vocabulary, and the construction of the enemy figure.</p>
+
+    <p>These patterns persist because they generate a sense of vulnerability that repeatedly calls for authority. The formula is resilient not because it is imposed from above, but because it works — because fear, when given a face and a name, produces consent. The "enemy image" is a technology. And like all technologies, it outlasts the hands that first built it.</p>
+
+    <p>The tapestry does not conclude this research. It opens it. By making these patterns material and permanent, it invites a question that visual analysis alone cannot answer: what does it mean when a society can no longer see the grammar it is living inside? When the billboard no longer feels like a message but like a fact? When the word "migration" no longer describes a phenomenon but triggers a reflex?</p>
+
+    <p>The blueprint is not unique to Hungary. It travels. The threads are already woven in — and they are woven in elsewhere too.</p>
+
+    <div class="pull-quote">"These patterns stop feeling like propaganda and start feeling like common sense."</div>
+
+    <figure>
+      <img src="https://picsum.photos/seed/conclusion_final/700/400?grayscale" alt="Placeholder — final work documentation">
+      <figcaption>
+        <strong>Placeholder — final tapestry or installation view.</strong>
+        Replace with documentation of the completed work.
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- FOOTNOTES -->
+  <div class="footnotes fade-in">
+    <h3>Notes</h3>
+    <ol>
+      <li>Add reference — source for the claim about Fidesz visual propaganda strategy.</li>
+      <li>Staal, Jonas. <em>Propaganda Art — From the 20th to the 21st Century.</em> Add publisher and year.</li>
+      <li>Bőhm, Kornél. <em>Propaganda.</em> Add publisher and year.</li>
+      <li>Csizmadia, Ervin. <em>The Logic of Hungarian Political Development (1990–2022).</em> 2024. Add publisher.</li>
+      <li>Add reference — source for visual grammar continuity between 1952 and 2018.</li>
+      <li>Add reference — source on the Soros figure as constructed political enemy in Hungary.</li>
+      <li>Add reference — source on the ballot box motif / visual continuity across campaigns.</li>
+    </ol>
+  </div>
+
+  <!-- DICTIONARY -->
+  <div class="dictionary fade-in" id="dictionary">
+    <div class="dict-hd">Glossary</div>
+    <div class="dict-entry"><span class="term">Visual grammar</span><span class="def">The set of compositional rules, symbolic conventions, and rhetorical structures through which visual communication produces meaning — independent of the ideological content it carries.</span></div>
+    <div class="dict-entry"><span class="term">Enemy image</span><span class="def">A constructed representation of a threatening "other" used in political communication to consolidate in-group identity and justify exclusionary policy. Recurring archetype in both socialist-era and contemporary Hungarian state messaging.</span></div>
+    <div class="dict-entry"><span class="term">Propaganda lineage</span><span class="def">The inherited transmission of aesthetic strategies, rhetorical templates, and symbolic archetypes across distinct political regimes and historical periods.</span></div>
+    <div class="dict-entry"><span class="term">Pattern following</span><span class="def">Term coined by Ervin Csizmadia to describe how current Hungarian politics revives old historical models of authority rather than inventing new ones.</span></div>
+    <div class="dict-entry"><span class="term">Tapestry</span><span class="def">A form of textile art produced by weaving coloured weft threads across a fixed warp; used here as both medium and metaphor for the interlacing of historical, linguistic, and visual forces.</span></div>
+    <div class="dict-entry"><span class="term">Word frequency</span><span class="def">A quantitative measure of how often specific terms appear in a corpus of text; used to map the recurrence of politically charged language in pro-government media and to generate the visual compositions in this project.</span></div>
+    <div class="dict-entry"><span class="term">Socialist era</span><span class="def">In this thesis, refers to the period of Soviet-influenced one-party rule in Hungary from approximately 1948 to 1989, and specifically to the visual and rhetorical culture of political communication produced during this period. The term "communist" has been avoided in favour of the more historically precise "socialist era."</span></div>
+    <div class="dict-entry"><span class="term">The Blueprint</span><span class="def">The structural set of visual and rhetorical rules — composition, enemy construction, the hero/threat binary — that recurs across Hungarian political communication regardless of which regime deploys it.</span></div>
+  </div>
+
+  <!-- COLOPHON -->
+  <div class="colophon fade-in">
+    <div><strong>The Blueprint Remains</strong>Visual Grammar of Hungarian<br>Political Communication<br>Graduation Thesis · 2025</div>
+    <div><strong>Institution</strong>Royal Academy of Art<br>The Hague · Graphic Design</div>
+    <div><strong>Author</strong>[Your Name]</div>
+    <div><strong>Typography</strong>EB Garamond<br>Space Mono</div>
+  </div>
+
+</main>
+
+<script>
+// ── FULLSCREEN WORD OVERLAY ──
+(function(){
+  const words = ['Soros','Brussels','Migration','Peace','Must','Danger','Hungary','Nation','War','Protection'];
+  const overlay = document.getElementById('word-overlay');
+  const heroContent = document.querySelector('.hero-content');
+  if (!overlay || !heroContent) return;
+
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  const WORD_GAP_X = 72;  // tight horizontal spacing
+  const WORD_GAP_Y = 13;  // tight vertical spacing — very dense rows
+
+  const cols = Math.ceil(W / WORD_GAP_X) + 2;
+  const rows = Math.ceil(H / WORD_GAP_Y) + 2;
+
+  const wordEls = [];
+  let wi = 0;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const word = words[wi % words.length];
+      wi++;
+      const span = document.createElement('span');
+      span.className = 'ov-word';
+      span.textContent = word;
+
+      const x = c * WORD_GAP_X + (Math.random() * 6 - 3);
+      const y = r * WORD_GAP_Y + (Math.random() * 2 - 1);
+      span.style.left = x + 'px';
+      span.style.top  = y + 'px';
+
+      overlay.appendChild(span);
+      wordEls.push({ el: span, cx: x + 30, cy: y + 4, gone: false });
+    }
+  }
+
+  let cleared = 0;
+  let fullyCleared = false;
+  const total = wordEls.length;
+
+  function revealContent() {
+    if (fullyCleared) return;
+    fullyCleared = true;
+    overlay.classList.add('cleared');
+    heroContent.classList.add('visible');
+    setTimeout(() => overlay.classList.add('hidden'), 800);
+  }
+
+  function clearNear(mx, my, radius) {
+    wordEls.forEach(item => {
+      if (item.gone) return;
+      const dx = item.cx - mx;
+      const dy = item.cy - my;
+      if (dx*dx + dy*dy < radius*radius) {
+        item.el.classList.add('gone');
+        item.gone = true;
+        cleared++;
+      }
+    });
+    if (!fullyCleared && cleared / total > 0.82) revealContent();
+  }
+
+  const autoTimer = setTimeout(revealContent, 5000);
+
+  window.addEventListener('mousemove', e => {
+    clearNear(e.clientX, e.clientY, 130);
+  }, { passive: true });
+
+  window.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    clearNear(t.clientX, t.clientY, 160);
+  }, { passive: true });
+
+  overlay.addEventListener('pointerdown', () => {
+    clearTimeout(autoTimer);
+    wordEls.forEach(item => { item.el.classList.add('gone'); item.gone = true; });
+    revealContent();
+  });
+
+})();
+
+// ── WORD FREQ ──
+const freqEl = document.getElementById('freq');
+new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) {
+    freqEl.querySelectorAll('.freq-bar').forEach(b => b.classList.add('go'));
+  }
+}, { rootMargin: '0px 0px -60px 0px' }).observe(freqEl);
+
+// ── SLIDESHOW ──
+const SS = {};
+function initSS(id) {
+  const el = document.getElementById(id);
+  SS[id] = { cur: 0, total: el.querySelectorAll('.slide').length };
+}
+function updSS(id) {
+  const el = document.getElementById(id);
+  el.querySelectorAll('.slide').forEach((s,i) => s.classList.toggle('active', i === SS[id].cur));
+  document.getElementById(id+'-c').textContent = `${SS[id].cur+1} / ${SS[id].total}`;
+}
+function nextSS(id) { SS[id].cur = (SS[id].cur+1) % SS[id].total; updSS(id); }
+function prevSS(id) { SS[id].cur = (SS[id].cur-1+SS[id].total) % SS[id].total; updSS(id); }
+initSS('ss1');
+
+// ── ACTIVE NAV ──
+const secs = document.querySelectorAll('section[id], div[id]');
+const links = document.querySelectorAll('nav a[data-s]');
+secs.forEach(s =>
+  new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) links.forEach(l => l.classList.toggle('active', l.dataset.s === e.target.id));
+    });
+  }, { rootMargin: '-25% 0px -65% 0px' }).observe(s)
+);
+
+// ── FADE IN ──
+const fadeObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); fadeObs.unobserve(e.target); }});
+}, { rootMargin: '0px 0px -50px 0px' });
+document.querySelectorAll('.fade-in').forEach(f => fadeObs.observe(f));
+document.querySelector('.hero').classList.add('visible');
+</script>
+</body>
+</html>
