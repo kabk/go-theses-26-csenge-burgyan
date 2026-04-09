@@ -410,6 +410,41 @@ hr { border: none; border-top: 1px solid var(--border); margin: 64px 0; }
 
 .colophon strong { color: var(--text); display: block; margin-bottom: 2px; }
 
+.originality {
+  margin-top: 52px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+}
+
+.originality h3 {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+
+.originality p {
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 560px;
+  margin-bottom: 14px;
+  line-height: 1.65;
+}
+
+.signed-label {
+  margin-top: 28px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.signature {
+  display: block;
+  max-width: 200px;
+  margin-top: 8px;
+}
+
 
 /* fade */
 
@@ -500,40 +535,67 @@ sup {
 
   #landing {
     margin-bottom: 0;
-    height: 100vh;
-    height: 100dvh;
+    height: 65vh;
+    height: 65dvh;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    max-width: 100vw;
   }
 
   #columns {
     display: flex;
-    flex-direction: row;
-    overflow-x: auto;
-    overflow-y: hidden;
+    flex-direction: column;
+    padding: 20px 8px 20px;
+    gap: 0;
     flex: 1;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x proximity;
+    justify-content: center;
+    overflow: hidden;
   }
 
   .col {
-    min-width: 35vw;
-    width: 35vw;
-    flex-shrink: 0;
-    border-right: 1px solid #222;
+    flex: none;
+    width: 100%;
+    border-right: none;
     border-bottom: none;
-    padding: 20px 0;
-    scroll-snap-align: start;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 4px;
   }
 
-  .col:last-child { border-right: none; min-width: 35vw; }
-  .word-item { font-size: 3px; line-height: 1.0; padding: 0 2px; }
-  .col-count { font-size: 8px; margin-bottom: 12px; }
+  .col:last-child { border-right: none; }
+
+  .col-count {
+    font-size: clamp(8px, 2.5vw, 14px);
+    color: #555;
+    margin-bottom: 0;
+    order: 2;
+    font-weight: 700;
+  }
+
+  .word-item {
+    display: none;
+  }
+
+  .col > .word-item:nth-child(2) {
+    display: block;
+    font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+    font-size: clamp(36px, 12vw, 60px);
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.0;
+    padding: 0;
+    white-space: nowrap;
+    text-align: left;
+    text-transform: uppercase;
+    width: auto;
+  }
 
   #counter { display: none; }
 
-  #landing-caption { padding: 16px 20px; font-size: 8px; text-align: left; }
+  #landing-caption { padding: 8px 8px 12px; font-size: 7px; text-align: left; }
 
   #margin-note {
     position: fixed;
